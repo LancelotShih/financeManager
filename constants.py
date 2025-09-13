@@ -31,3 +31,5 @@ RETIREMENT_ACCOUNTS = {
     "IRA_traditional": {"portfolio": {}},  # stock symbol -> shares
     "IRA_roth": {"portfolio": {}}
 }
+
+PORTFOLIO_DB_FILE = "portfolio1.db"

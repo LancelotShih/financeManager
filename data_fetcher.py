@@ -5,15 +5,14 @@ from constants import RETIREMENT_ACCOUNTS
 from retirement import get_ira_value, update_ira_stock_price
 
 # If you want to test real API later
-from alpha_vantage.timeseries import TimeSeries
+import yfinance as yf
 
 # --- Configuration ---
 USE_MOCK = False  # True = use mock prices, False = use real API
-API_KEY = "TS53P3FQSHDYW2RU"
 
 # --- Mock base prices ---
 MOCK_BASE_PRICES = {
-    "GOOGL" : 240.0,
+    "GOOGL" : 140.0,
     "SPY": 657,
     "NVDA": 177.82,
     "META": 755.59,
@@ -64,10 +63,19 @@ def update_all_stock_prices_mock():
 
 # ---------------- Real API Functions ----------------
 def update_stock_price_api(symbol: str):
-    ts = TimeSeries(key=API_KEY, output_format='pandas')
-    data, _ = ts.get_quote_endpoint(symbol)
-    price = float(data["05. price"][0])
-    constants.STOCK_PRICES[symbol] = price
+    ticker = yf.Ticker(symbol)
+    price = None
+    try:
+        price = ticker.fast_info['last_price']
+    except Exception:
+        # fallback if fast_info fails
+        hist = ticker.history(period="1d")
+        if not hist.empty:
+            price = hist['Close'].iloc[-1]
+    if price is not None:
+        constants.STOCK_PRICES[symbol] = float(price)
+    else:
+        print(f"Failed to fetch price for {symbol} using yfinance.")
 
 def update_all_stock_prices_api():
     for symbol in constants.PORTFOLIO:

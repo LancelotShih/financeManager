@@ -1,3 +1,8 @@
+import sqlite3
+from constants import PORTFOLIO, PORTFOLIO_DB_FILE
+
+DB_FILE = PORTFOLIO_DB_FILE
+
 # --- Cash Accounts DB Functions ---
 def get_cash_accounts():
     conn = sqlite3.connect(DB_FILE)
@@ -67,10 +72,6 @@ def remove_ira_holding(holding_id: int):
     c.execute('DELETE FROM ira_holdings WHERE id = ?', (holding_id,))
     conn.commit()
     conn.close()
-import sqlite3
-from constants import PORTFOLIO
-
-DB_FILE = "portfolio.db"
 
 def init_db():
     # Add cash_accounts table

@@ -12,17 +12,11 @@ db.init_db()
 
 # --- Ensure cash account session state is always initialized and loaded from DB ---
 cash_types = ["SWVXX", "SPAXX", "Checking"]
-db_cash = db.get_cash_accounts()
-for cash_type in cash_types:
-    key = f"cash_{cash_type}"
-    db_val = db_cash.get(cash_type, 0.0)
-    constants.CASH_ACCOUNTS[cash_type] = db_val
-    if key not in st.session_state:
-        st.session_state[key] = db_val
+
 
 # ---------------- Sidebar Navigation ----------------
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Dashboard", "Manage Portfolio", "Treasuries", "Retirement Accounts", "Cash Accounts"])
+page = st.sidebar.radio("Go to", ["Dashboard", "Manage Portfolio", "Treasuries", "Retirement Accounts"])
 
 
 # ---------------- Helper: Price Update ----------------
@@ -54,14 +48,13 @@ if page == "Dashboard":
 
     maybe_update_prices()
 
-    # Prepare data for cards
+    # Always load latest cash balances from DB
+    db_cash = db.get_cash_accounts()
+    for cash_type in cash_types:
+        constants.CASH_ACCOUNTS[cash_type] = db_cash.get(cash_type, 0.0)
+        st.session_state[f"cash_{cash_type}"] = db_cash.get(cash_type, 0.0)
+    cash_total = sum(db_cash.get(c, 0.0) for c in cash_types)
     net_worth = data_fetcher.get_net_worth()
-    cash_types = ["SWVXX", "SPAXX", "Checking"]
-    for c in cash_types:
-        key = f"cash_{c}"
-        if key not in st.session_state:
-            st.session_state[key] = 0.0
-    cash_total = sum(st.session_state.get(f"cash_{c}", 0.0) for c in cash_types)
 
     # Portfolio summary
     portfolio_metrics = []
@@ -144,34 +137,6 @@ if page == "Dashboard":
         for label, value, _ in cash_metrics:
             st.metric(label=label, value=value)
         st.markdown('</div>', unsafe_allow_html=True)
-elif page == "Cash Accounts":
-    st.title("🏦 Cash Accounts")
-    cash_types = ["SWVXX", "SPAXX", "Checking"]
-    def update_cash_account(key, cash_type):
-        constants.CASH_ACCOUNTS[cash_type] = st.session_state[key]
-
-    for cash_type in cash_types:
-        key = f"cash_{cash_type}"
-        if key not in st.session_state:
-            st.session_state[key] = constants.CASH_ACCOUNTS.get(cash_type, 0.0)
-        st.number_input(
-            f"{cash_type} Balance ($)",
-            min_value=0.0,
-            value=st.session_state[key],
-            step=100.0,
-            key=key,
-            on_change=update_cash_account,
-            args=(key, cash_type)
-        )
-
-    if st.button("Save Cash Accounts"):
-        for cash_type in cash_types:
-            key = f"cash_{cash_type}"
-            if key in st.session_state:
-                value = st.session_state[key]
-                constants.CASH_ACCOUNTS[cash_type] = value
-                db.set_cash_account(cash_type, value)
-        st.success("Cash account balances saved!")
 
 # ---------------- Manage Portfolio Page ----------------
 elif page == "Manage Portfolio":
@@ -200,6 +165,28 @@ elif page == "Manage Portfolio":
                 db.remove_stock(symbol)
                 st.session_state.prices_updated = False
                 st.rerun()
+
+    # --- Cash Balances Section ---
+    st.subheader("Cash Balances")
+    cash_types = ["SWVXX", "SPAXX", "Checking"]
+    cash_changed = False
+    for cash_type in cash_types:
+        key = f"portfolio_cash_{cash_type}"
+        if key not in st.session_state:
+            st.session_state[key] = constants.CASH_ACCOUNTS.get(cash_type, 0.0)
+        new_val = st.number_input(f"{cash_type} Balance ($)", min_value=0.0, value=st.session_state[key], step=100.0, key=key)
+        if new_val != constants.CASH_ACCOUNTS.get(cash_type, 0.0):
+            cash_changed = True
+    if st.button("Save Cash Balances"):
+        for cash_type in cash_types:
+            key = f"portfolio_cash_{cash_type}"
+            val = st.session_state[key]
+            constants.CASH_ACCOUNTS[cash_type] = val
+            db.set_cash_account(cash_type, val)
+            # Also update the dashboard session state key
+            dash_key = f"cash_{cash_type}"
+            st.session_state[dash_key] = val
+        st.success("Cash balances updated!")
 elif page == "Treasuries":
     st.title("💵 Treasury Securities")
 
