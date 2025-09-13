@@ -8,7 +8,7 @@ from retirement import get_ira_value, update_ira_stock_price
 from alpha_vantage.timeseries import TimeSeries
 
 # --- Configuration ---
-USE_MOCK = True  # True = use mock prices, False = use real API
+USE_MOCK = False  # True = use mock prices, False = use real API
 API_KEY = "TS53P3FQSHDYW2RU"
 
 # --- Mock base prices ---
