@@ -1,3 +1,18 @@
+# --- Cash Accounts DB Functions ---
+def get_cash_accounts():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT name, balance FROM cash_accounts')
+    rows = c.fetchall()
+    conn.close()
+    return {name: balance for name, balance in rows}
+
+def set_cash_account(name: str, balance: float):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('INSERT OR REPLACE INTO cash_accounts (name, balance) VALUES (?, ?)', (name, balance))
+    conn.commit()
+    conn.close()
 # --- Retirement Accounts DB Functions ---
 def add_retirement_account(name: str, acc_type: str, balance: float = 0.0) -> int:
     conn = sqlite3.connect(DB_FILE)
@@ -58,6 +73,16 @@ from constants import PORTFOLIO
 DB_FILE = "portfolio.db"
 
 def init_db():
+    # Add cash_accounts table
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS cash_accounts (
+            name TEXT PRIMARY KEY,
+            balance REAL NOT NULL
+        )
+    ''')
+    conn.commit()
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''

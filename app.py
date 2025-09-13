@@ -10,12 +10,15 @@ from constants import RETIREMENT_ACCOUNTS
 # Initialize database and load portfolio
 db.init_db()
 
-# --- Ensure cash account session state is always initialized ---
+# --- Ensure cash account session state is always initialized and loaded from DB ---
 cash_types = ["SWVXX", "SPAXX", "Checking"]
+db_cash = db.get_cash_accounts()
 for cash_type in cash_types:
     key = f"cash_{cash_type}"
+    db_val = db_cash.get(cash_type, 0.0)
+    constants.CASH_ACCOUNTS[cash_type] = db_val
     if key not in st.session_state:
-        st.session_state[key] = constants.CASH_ACCOUNTS.get(cash_type, 0.0)
+        st.session_state[key] = db_val
 
 # ---------------- Sidebar Navigation ----------------
 st.sidebar.title("Navigation")
@@ -51,32 +54,25 @@ if page == "Dashboard":
 
     maybe_update_prices()
 
-    # Display net worth FIRST
-    st.subheader("Net Worth")
+    # Prepare data for cards
     net_worth = data_fetcher.get_net_worth()
     cash_types = ["SWVXX", "SPAXX", "Checking"]
-    # Always initialize cash keys in session state if missing
     for c in cash_types:
         key = f"cash_{c}"
         if key not in st.session_state:
             st.session_state[key] = 0.0
     cash_total = sum(st.session_state.get(f"cash_{c}", 0.0) for c in cash_types)
-    st.metric(label="Total Net Worth (including cash)", value=f"${net_worth + cash_total:,.2f}")
 
-    # Display portfolio
+    # Portfolio summary
+    portfolio_metrics = []
     if not constants.PORTFOLIO:
-        st.info("No stocks in your portfolio yet. Add some in 'Manage Portfolio'.")
+        portfolio_metrics.append(("No stocks in your portfolio yet.", "", ""))
     else:
-        st.subheader("Portfolio")
         for symbol, shares in constants.PORTFOLIO.items():
             price = constants.STOCK_PRICES.get(symbol, 0.0)
-            st.metric(
-                label=f"{symbol} ({shares} shares)",
-                value=f"${price:.2f}",
-                delta=f"Value: ${price * shares:.2f}"
-            )
+            portfolio_metrics.append((f"{symbol} ({shares} shares)", f"${price:.2f}", f"Value: ${price * shares:.2f}"))
 
-    # Display IRA account equities
+    # IRA summary
     accounts = db.get_retirement_accounts()
     ira_holdings = []
     for acc_id, name, acc_type, balance in accounts:
@@ -84,23 +80,70 @@ if page == "Dashboard":
             holdings = db.get_ira_holdings(acc_id)
             for _, symbol, shares in holdings:
                 ira_holdings.append((name, acc_type, symbol, shares))
-    if ira_holdings:
-        st.subheader("IRA Account Equities")
+    ira_metrics = []
+    if not ira_holdings:
+        ira_metrics.append(("No IRA equities yet.", "", ""))
+    else:
         for ira_name, ira_type, symbol, shares in ira_holdings:
             price = constants.STOCK_PRICES.get(symbol.upper(), 0.0)
-            st.metric(
-                label=f"{ira_name} ({ira_type}) - {symbol} ({shares} shares)",
-                value=f"${price:.2f}",
-                delta=f"Value: ${price * shares:.2f}"
-            )
+            ira_metrics.append((f"{ira_name} ({ira_type}) - {symbol} ({shares} shares)", f"${price:.2f}", f"Value: ${price * shares:.2f}"))
 
-    # Display cash account balances summary at the true bottom
-    st.markdown("---")
-    st.subheader("Cash Accounts")
+    # Cash summary
+    cash_metrics = []
     for cash_type in cash_types:
         key = f"cash_{cash_type}"
         balance = st.session_state.get(key, 0.0)
-        st.metric(label=f"{cash_type} Balance", value=f"${balance:,.2f}")
+        cash_metrics.append((f"{cash_type} Balance", f"${balance:,.2f}", ""))
+
+    # Make the entire dashboard page (title, buttons, cards) wide
+    st.markdown("""
+        <style>
+        .block-container {
+            max-width: 2200px !important;
+            width: 70vw !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        # .dashboard-card {
+        #     border: 3px solid #333;
+        #     border-radius: 18px;
+        #     background: #f7fafd;
+        #     box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+        #     padding: 2.2rem 1.5rem 1.5rem 1.5rem;
+        #     min-width: 0;
+        #     min-height: 250px;
+        #     height: 100%;
+        #     flex: 1 1 0;
+        #     display: flex;
+        #     flex-direction: column;
+        #     justify-content: flex-start;
+        # }
+        </style>
+    """, unsafe_allow_html=True)
+    cols = st.columns(4, gap="large")
+    with cols[0]:
+        st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+        st.markdown("#### Net Worth")
+        st.metric(label="Total Net Worth (including cash)", value=f"${net_worth + cash_total:,.2f}")
+        st.markdown('</div>', unsafe_allow_html=True)
+    with cols[1]:
+        st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+        st.markdown("#### Portfolio")
+        for label, value, delta in portfolio_metrics:
+            st.metric(label=label, value=value, delta=delta)
+        st.markdown('</div>', unsafe_allow_html=True)
+    with cols[2]:
+        st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+        st.markdown("#### IRA Account Equities")
+        for label, value, delta in ira_metrics:
+            st.metric(label=label, value=value, delta=delta)
+        st.markdown('</div>', unsafe_allow_html=True)
+    with cols[3]:
+        st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+        st.markdown("#### Cash Accounts")
+        for label, value, _ in cash_metrics:
+            st.metric(label=label, value=value)
+        st.markdown('</div>', unsafe_allow_html=True)
 elif page == "Cash Accounts":
     st.title("🏦 Cash Accounts")
     cash_types = ["SWVXX", "SPAXX", "Checking"]
@@ -125,7 +168,9 @@ elif page == "Cash Accounts":
         for cash_type in cash_types:
             key = f"cash_{cash_type}"
             if key in st.session_state:
-                constants.CASH_ACCOUNTS[cash_type] = st.session_state[key]
+                value = st.session_state[key]
+                constants.CASH_ACCOUNTS[cash_type] = value
+                db.set_cash_account(cash_type, value)
         st.success("Cash account balances saved!")
 
 # ---------------- Manage Portfolio Page ----------------
