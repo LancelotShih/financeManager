@@ -10,7 +10,7 @@ from constants import RETIREMENT_ACCOUNTS
 # Initialize database and load portfolio
 db.init_db()
 
-# --- Ensure cash account session state is always initialized and loaded from DB ---
+# Ensure cash account session state is always initialized and loaded from DB
 cash_types = ["SWVXX", "SPAXX", "Checking"]
 
 
@@ -25,7 +25,7 @@ if "prices_updated" not in st.session_state:
     st.session_state.prices_updated = False
 
 def maybe_update_prices():
-    """Update prices only if they haven't been updated this session."""
+    # Update prices only if they haven't been updated this session. 
     if not st.session_state.prices_updated:
         data_fetcher.update_all_stock_prices()
         st.session_state.prices_updated = True

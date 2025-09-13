@@ -4,7 +4,6 @@ from treasury import calculate_current_value
 from constants import RETIREMENT_ACCOUNTS
 from retirement import get_ira_value, update_ira_stock_price
 
-# If you want to test real API later
 import yfinance as yf
 
 # --- Configuration ---
@@ -138,7 +137,7 @@ def update_stock_price(symbol: str):
         update_stock_price_api(symbol)
 
 def update_all_stock_prices():
-    """Update all stock prices based on toggle."""
+    # Update all stock prices based on toggle.
     if USE_MOCK:
         update_all_stock_prices_mock()
     else:

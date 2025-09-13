@@ -15,10 +15,10 @@ def remove_treasury(name: str):
         del TREASURIES[name]
 
 def calculate_current_value(name: str) -> float:
-    """
-    Calculates the current value of a treasury using simple interest.
-    For T-bills, you can just return face_value; for notes/bonds, calculate accrued interest.
-    """
+    
+    # Calculates the current value of a treasury using simple interest.
+    # For T-bills, you can just return face_value; for notes/bonds, calculate accrued interest.
+    
     t = TREASURIES[name]
     face = t["face_value"]
     rate = t["interest_rate"]
