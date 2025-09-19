@@ -10,6 +10,10 @@ from constants import RETIREMENT_ACCOUNTS
 # Initialize database and load portfolio
 db.init_db()
 
+# Sync treasuries from DB on startup
+from treasury import sync_treasuries_from_db
+sync_treasuries_from_db()
+
 # Ensure cash account session state is always initialized and loaded from DB
 cash_types = ["SWVXX", "SPAXX", "Checking"]
 
@@ -32,6 +36,9 @@ def maybe_update_prices():
 
 # ---------------- Dashboard Page ----------------
 if page == "Dashboard":
+    # Always load latest cash balances from DB (needed for pie chart and dashboard)
+    db_cash = db.get_cash_accounts()
+
 
     st.title("📊 My Financial Dashboard")
 
@@ -97,46 +104,107 @@ if page == "Dashboard":
             margin-left: auto !important;
             margin-right: auto !important;
         }
-        # .dashboard-card {
-        #     border: 3px solid #333;
-        #     border-radius: 18px;
-        #     background: #f7fafd;
-        #     box-shadow: 0 6px 24px rgba(0,0,0,0.13);
-        #     padding: 2.2rem 1.5rem 1.5rem 1.5rem;
-        #     min-width: 0;
-        #     min-height: 250px;
-        #     height: 100%;
-        #     flex: 1 1 0;
-        #     display: flex;
-        #     flex-direction: column;
-        #     justify-content: flex-start;
-        # }
         </style>
     """, unsafe_allow_html=True)
     cols = st.columns(4, gap="large")
+    cols = st.columns(5, gap="large")
+    # Net Worth Card
     with cols[0]:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.markdown("#### Net Worth")
         st.metric(label="Total Net Worth (including cash)", value=f"${net_worth + cash_total:,.2f}")
+        # Show Roth 401k balance if present
+        roth_401k_balance = None
+        accounts = db.get_retirement_accounts()
+        for acc_id, name, acc_type, balance in accounts:
+            if acc_type == "401k_roth":
+                roth_401k_balance = balance
+                break
+        if roth_401k_balance is not None:
+            st.metric(label="Roth 401k Balance", value=f"${roth_401k_balance:,.2f}")
         st.markdown('</div>', unsafe_allow_html=True)
+    # Portfolio Card
     with cols[1]:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.markdown("#### Portfolio")
         for label, value, delta in portfolio_metrics:
             st.metric(label=label, value=value, delta=delta)
         st.markdown('</div>', unsafe_allow_html=True)
+    # IRA Card
     with cols[2]:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.markdown("#### IRA Account Equities")
         for label, value, delta in ira_metrics:
             st.metric(label=label, value=value, delta=delta)
         st.markdown('</div>', unsafe_allow_html=True)
+    # Cash Accounts Card
+    # Treasuries Card (by type)
     with cols[3]:
+        st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+        st.markdown("#### Treasuries (by Type)")
+        # Aggregate by type
+        type_totals = {}
+        for name, data in TREASURIES.items():
+            ttype = data.get("type", "Other")
+            value = calculate_current_value(name)
+            type_totals[ttype] = type_totals.get(ttype, 0.0) + value
+        if not type_totals:
+            st.metric(label="No treasuries", value="$")
+        else:
+            for ttype, total in type_totals.items():
+                st.metric(label=ttype, value=f"${total:,.2f}")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Cash Accounts Card
+    with cols[4]:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.markdown("#### Cash Accounts")
         for label, value, _ in cash_metrics:
             st.metric(label=label, value=value)
         st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- Net Worth Breakdown Pie Chart (bottom left, below Net Worth) ---
+    with cols[0]:
+        # Calculate category values
+        import matplotlib.pyplot as plt
+        portfolio_value = sum(constants.STOCK_PRICES.get(symbol, 0.0) * shares for symbol, shares in constants.PORTFOLIO.items())
+        ira_value = 0.0
+        roth_401k_value = 0.0
+        treasury_value = sum(calculate_current_value(name) for name in TREASURIES)
+        cash_value = sum(db_cash.get(c, 0.0) for c in cash_types)
+        accounts = db.get_retirement_accounts()
+        for acc_id, name, acc_type, balance in accounts:
+            if "IRA" in acc_type:
+                holdings = db.get_ira_holdings(acc_id)
+                for _, symbol, shares in holdings:
+                    price = constants.STOCK_PRICES.get(symbol.upper(), 0.0)
+                    ira_value += price * shares
+            elif acc_type == "401k_roth":
+                roth_401k_value += balance
+
+        labels = []
+        values = []
+        if portfolio_value > 0:
+            labels.append("Portfolio")
+            values.append(portfolio_value)
+        if ira_value > 0:
+            labels.append("IRA Equities")
+            values.append(ira_value)
+        if roth_401k_value > 0:
+            labels.append("Roth 401k")
+            values.append(roth_401k_value)
+        if cash_value > 0:
+            labels.append("Cash Accounts")
+            values.append(cash_value)
+        if treasury_value > 0:
+            labels.append("Treasuries")
+            values.append(treasury_value)
+        if values:
+            fig, ax = plt.subplots()
+            ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, counterclock=False)
+            ax.axis('equal')
+            st.markdown("#### Net Worth Breakdown")
+            st.pyplot(fig)
 
 # ---------------- Manage Portfolio Page ----------------
 elif page == "Manage Portfolio":
@@ -191,8 +259,12 @@ elif page == "Treasuries":
     st.title("💵 Treasury Securities")
 
     st.subheader("Add Treasury")
+    treasury_types = [
+        "Bills", "Notes", "Bonds", "TIPS Notes/Bonds", "FRN", "Series EE Bonds", "Series I Bonds"
+    ]
     with st.form("add_treasury_form"):
         name = st.text_input("Name (e.g., T-Bill 2026)")
+        ttype = st.selectbox("Treasury Type", treasury_types)
         face_value = st.number_input("Face Value ($)", min_value=0.0, step=100.0)
         interest_rate = st.number_input("Interest Rate (%)", min_value=0.0, max_value=100.0, step=0.01)
         purchase_date = st.date_input("Purchase Date")
@@ -201,14 +273,17 @@ elif page == "Treasuries":
         if submitted:
             add_treasury(
                 name,
+                ttype,
                 face_value,
                 interest_rate / 100,
                 purchase_date.isoformat(),
                 maturity_date.isoformat()
             )
+            sync_treasuries_from_db()
             st.success(f"Treasury '{name}' added!")
 
     st.subheader("Current Treasuries")
+    sync_treasuries_from_db()
     if not TREASURIES:
         st.info("No treasuries added yet.")
     else:
@@ -217,6 +292,7 @@ elif page == "Treasuries":
             st.metric(label=name, value=f"${value:,.2f}", delta=f"Face: ${data['face_value']}")
             if st.button("Remove", key=name):
                 remove_treasury(name)
+                sync_treasuries_from_db()
 elif page == "Retirement Accounts":
     st.title("🏦 Retirement Accounts")
 
@@ -273,10 +349,25 @@ elif page == "Retirement Accounts":
                         st.info("No equities in this IRA yet.")
                     else:
                         for holding_id, symbol, shares in holdings:
-                            colh1, colh2, colh3 = st.columns([2,2,1])
+                            colh1, colh2, colh3, colh4 = st.columns([2,2,1,1])
                             colh1.write(symbol)
-                            colh2.write(f"{shares} shares @ ${constants.STOCK_PRICES.get(symbol.upper(), 0.0):.2f}")
-                            if colh3.button("Remove", key=f"remove_holding_{holding_id}"):
+                            # Editable number input for shares
+                            new_shares = colh2.number_input(
+                                f"Shares for {symbol} (IRA {acc_id})",
+                                min_value=0.0,
+                                value=shares,
+                                step=1.0,
+                                key=f"ira_edit_shares_{holding_id}"
+                            )
+                            colh3.write(f"@ ${constants.STOCK_PRICES.get(symbol.upper(), 0.0):.2f}")
+                            # Update button
+                            if colh4.button("Update", key=f"update_holding_{holding_id}"):
+                                if new_shares != shares:
+                                    db.update_ira_holding_shares(holding_id, new_shares)
+                                    st.success(f"Updated {symbol} shares to {new_shares}")
+                                    st.rerun()
+                            # Remove button
+                            if colh4.button("Remove", key=f"remove_holding_{holding_id}"):
                                 db.remove_ira_holding(holding_id)
                                 st.success("Equity removed!")
                                 st.rerun()

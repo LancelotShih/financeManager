@@ -2,7 +2,7 @@
 A small python app that you can enter your basic financial holdings and determine your net worth
 
 # Usage
-If you would just like to use the app, find the `.exe` file 
+If you would just like to use the app, find the `.exe` file in releases
 
 ## Install Dependencies
 

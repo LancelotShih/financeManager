@@ -1,18 +1,27 @@
+
 from constants import TREASURIES
-
 from datetime import datetime
+import db
 
-def add_treasury(name: str, face_value: float, interest_rate: float, purchase_date: str, maturity_date: str):
-    TREASURIES[name] = {
-        "face_value": face_value,
-        "interest_rate": interest_rate,
-        "purchase_date": purchase_date,
-        "maturity_date": maturity_date
-    }
+# Utility to sync in-memory TREASURIES from DB
+def sync_treasuries_from_db():
+    TREASURIES.clear()
+    for name, ttype, face_value, interest_rate, purchase_date, maturity_date in db.get_treasuries_db():
+        TREASURIES[name] = {
+            "type": ttype,
+            "face_value": face_value,
+            "interest_rate": interest_rate,
+            "purchase_date": purchase_date,
+            "maturity_date": maturity_date
+        }
+
+def add_treasury(name: str, ttype: str, face_value: float, interest_rate: float, purchase_date: str, maturity_date: str):
+    db.add_treasury_db(name, ttype, face_value, interest_rate, purchase_date, maturity_date)
+    sync_treasuries_from_db()
 
 def remove_treasury(name: str):
-    if name in TREASURIES:
-        del TREASURIES[name]
+    db.remove_treasury_db(name)
+    sync_treasuries_from_db()
 
 def calculate_current_value(name: str) -> float:
     

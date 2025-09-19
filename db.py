@@ -73,6 +73,13 @@ def remove_ira_holding(holding_id: int):
     conn.commit()
     conn.close()
 
+def update_ira_holding_shares(holding_id: int, shares: float):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('UPDATE ira_holdings SET shares = ? WHERE id = ?', (shares, holding_id))
+    conn.commit()
+    conn.close()
+
 def init_db():
     # Add cash_accounts table
     conn = sqlite3.connect(DB_FILE)
@@ -83,9 +90,7 @@ def init_db():
             balance REAL NOT NULL
         )
     ''')
-    conn.commit()
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
+    # Add stocks table
     c.execute('''
         CREATE TABLE IF NOT EXISTS stocks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,11 +117,57 @@ def init_db():
             FOREIGN KEY(account_id) REFERENCES retirement_accounts(id) ON DELETE CASCADE
         )
     ''')
+    # Add treasuries table (now with 'type' column)
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS treasuries (
+            name TEXT PRIMARY KEY,
+            type TEXT NOT NULL,
+            face_value REAL NOT NULL,
+            interest_rate REAL NOT NULL,
+            purchase_date TEXT NOT NULL,
+            maturity_date TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
     # Load DB into in-memory constants
     load_portfolio_from_db()
 
+# --- Treasuries DB Functions ---
+def add_treasury_db(name: str, ttype: str, face_value: float, interest_rate: float, purchase_date: str, maturity_date: str):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        INSERT OR REPLACE INTO treasuries (name, type, face_value, interest_rate, purchase_date, maturity_date)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (name, ttype, face_value, interest_rate, purchase_date, maturity_date))
+    conn.commit()
+    conn.close()
+
+def get_treasuries_db():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT name, type, face_value, interest_rate, purchase_date, maturity_date FROM treasuries')
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def remove_treasury_db(name: str):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('DELETE FROM treasuries WHERE name = ?', (name,))
+    conn.commit()
+    conn.close()
+
+def update_treasury_db(name: str, face_value: float, interest_rate: float, purchase_date: str, maturity_date: str):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        UPDATE treasuries SET face_value = ?, interest_rate = ?, purchase_date = ?, maturity_date = ?
+        WHERE name = ?
+    ''', (face_value, interest_rate, purchase_date, maturity_date, name))
+    conn.commit()
+    conn.close()
 def load_portfolio_from_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
