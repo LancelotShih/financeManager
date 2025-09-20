@@ -23,3 +23,8 @@ pip install streamlit yfinance pandas numpy requests
 
 ## Run the app
 to run, head to the directory and run `streamlit run app.py`
+
+## Command to Create the `.exe`
+```
+pyinstaller --onefile --add-data "../app.py;." --add-data "../db.py;." --add-data "../constants.py;." --add-data "../data_fetcher.py;." --add-data "../treasury.py;." --add-data "../retirement.py;." run_app.py
+```

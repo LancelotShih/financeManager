@@ -1,4 +1,4 @@
-('C:\\Users\\lance\\Documents\\financeApp\\build\\run_app\\PYZ-00.pyz',
+('C:\\Users\\lance\\Documents\\financeApp\\app\\build\\run_app\\PYZ-00.pyz',
  [('_compat_pickle',
    'C:\\Users\\lance\\miniconda3\\lib\\_compat_pickle.py',
    'PYMODULE'),
