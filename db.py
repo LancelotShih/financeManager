@@ -1,3 +1,10 @@
+def update_stock_shares(symbol: str, shares: float):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('UPDATE stocks SET shares = ? WHERE symbol = ?', (shares, symbol.upper()))
+    conn.commit()
+    conn.close()
+    load_portfolio_from_db()
 import sqlite3
 from constants import PORTFOLIO, PORTFOLIO_DB_FILE
 

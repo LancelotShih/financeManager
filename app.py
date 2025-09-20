@@ -113,16 +113,15 @@ if page == "Dashboard":
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.markdown("#### Net Worth")
         st.metric(label="Total Net Worth (including cash)", value=f"${net_worth + cash_total:,.2f}")
-        # Show Roth 401k balance if present
+        # Show Roth 401k and Traditional 401k balances if present
         roth_401k_balance = None
+        trad_401k_balance = None
         accounts = db.get_retirement_accounts()
         for acc_id, name, acc_type, balance in accounts:
             if acc_type == "401k_roth":
                 roth_401k_balance = balance
-                break
-        if roth_401k_balance is not None:
-            st.metric(label="Roth 401k Balance", value=f"${roth_401k_balance:,.2f}")
-        st.markdown('</div>', unsafe_allow_html=True)
+            elif acc_type == "401k_traditional":
+                trad_401k_balance = balance
     # Portfolio Card
     with cols[1]:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
@@ -136,6 +135,11 @@ if page == "Dashboard":
         st.markdown("#### IRA Account Equities")
         for label, value, delta in ira_metrics:
             st.metric(label=label, value=value, delta=delta)
+        st.markdown('</div>', unsafe_allow_html=True)
+        if roth_401k_balance is not None:
+            st.metric(label="Roth 401k Balance", value=f"${roth_401k_balance:,.2f}")
+        if trad_401k_balance is not None:
+            st.metric(label="Traditional 401k Balance", value=f"${trad_401k_balance:,.2f}")
         st.markdown('</div>', unsafe_allow_html=True)
     # Cash Accounts Card
     # Treasuries Card (by type)
@@ -170,6 +174,7 @@ if page == "Dashboard":
         portfolio_value = sum(constants.STOCK_PRICES.get(symbol, 0.0) * shares for symbol, shares in constants.PORTFOLIO.items())
         ira_value = 0.0
         roth_401k_value = 0.0
+        trad_401k_value = 0.0
         treasury_value = sum(calculate_current_value(name) for name in TREASURIES)
         cash_value = sum(db_cash.get(c, 0.0) for c in cash_types)
         accounts = db.get_retirement_accounts()
@@ -181,6 +186,8 @@ if page == "Dashboard":
                     ira_value += price * shares
             elif acc_type == "401k_roth":
                 roth_401k_value += balance
+            elif acc_type == "401k_traditional":
+                trad_401k_value += balance
 
         labels = []
         values = []
@@ -193,6 +200,9 @@ if page == "Dashboard":
         if roth_401k_value > 0:
             labels.append("Roth 401k")
             values.append(roth_401k_value)
+        if trad_401k_value > 0:
+            labels.append("Traditional 401k")
+            values.append(trad_401k_value)
         if cash_value > 0:
             labels.append("Cash Accounts")
             values.append(cash_value)
@@ -226,10 +236,21 @@ elif page == "Manage Portfolio":
         st.info("No stocks yet.")
     else:
         for symbol, shares in list(constants.PORTFOLIO.items()):
-            col1, col2, col3 = st.columns([2, 2, 1])
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
             col1.write(symbol)
-            col2.write(f"{shares} shares")
-            if col3.button("Remove", key=symbol):
+            # Editable number input for shares
+            shares_key = f"edit_shares_{symbol}"
+            new_shares = col2.number_input(
+                "Shares", min_value=0.0, value=shares, step=1.0, key=shares_key
+            )
+            updated = col3.button("Update", key=f"update_{symbol}")
+            removed = col4.button("Remove", key=f"remove_{symbol}")
+            if updated and new_shares != shares:
+                db.update_stock_shares(symbol, new_shares)
+                st.session_state.prices_updated = False
+                st.success(f"Updated {symbol} to {new_shares} shares.")
+                st.rerun()
+            if removed:
                 db.remove_stock(symbol)
                 st.session_state.prices_updated = False
                 st.rerun()
