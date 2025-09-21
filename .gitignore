@@ -1,2 +1,17 @@
-# Ignore all portfolio files
-portfolio*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# SQLite database
+*.db
+
+# Node modules
+frontend/node_modules/
+
+# Environment
+.env
