@@ -1,4 +1,3 @@
-
 import React from "react";
 import { getStockPrice } from "./priceApi";
 
@@ -194,36 +193,36 @@ export default function Retirement() {
   const totalBalance = accounts.reduce((sum, acc) => sum + (Number(acc.balance) || 0), 0);
 
   return (
-    <div style={{maxWidth: 900, margin: "40px auto", padding: '32px 40px', background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px #0001"}}>
-      <h2>Retirement Accounts</h2>
-      <div style={{fontSize: 22, fontWeight: 600, marginBottom: 24, color: '#1976d2'}}>
+    <div style={{maxWidth: 900, margin: "40px auto", padding: '32px 40px', background: "var(--bg-card)", borderRadius: 12, boxShadow: "0 2px 12px #0006", color: "var(--text-main)"}}>
+      <h2 style={{color: "var(--text-main)"}}>Retirement Accounts</h2>
+      <div style={{fontSize: 22, fontWeight: 600, marginBottom: 24, color: '#90caf9'}}>
         Total Retirement Holdings: ${totalBalance.toLocaleString(undefined, {maximumFractionDigits: 2})}
       </div>
       <form onSubmit={handleAddAccount} style={{marginBottom: 32}}>
         <div style={{display: 'flex', gap: 16, marginBottom: 16}}>
           <div style={{flex: 2}}>
             <label>Account Name</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} style={{width: '100%', padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid #ccc"}} placeholder="e.g. Vanguard Roth IRA" />
+            <input type="text" value={name} onChange={e => setName(e.target.value)} style={{width: '100%', padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid var(--border-main)", background: 'var(--bg-main)', color: 'var(--text-main)'}} placeholder="e.g. Vanguard Roth IRA" />
           </div>
           <div style={{flex: 1}}>
             <label>Account Type</label>
-            <select value={type} onChange={e => setType(e.target.value)} style={{width: '100%', padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid #ccc"}}>
+            <select value={type} onChange={e => setType(e.target.value)} style={{width: '100%', padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid var(--border-main)", background: 'var(--bg-main)', color: 'var(--text-main)'}}>
               {RETIREMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </div>
         <button type="submit" style={{padding: '10px 24px', fontSize: 16, borderRadius: 6, background: "#1976d2", color: "#fff", border: "none"}}>Add Account</button>
-        {success && <div style={{color: 'green', marginTop: 16}}>{success}</div>}
-        {error && <div style={{color: 'red', marginTop: 16}}>{error}</div>}
+        {success && <div style={{color: 'lightgreen', marginTop: 16}}>{success}</div>}
+        {error && <div style={{color: '#ff6b6b', marginTop: 16}}>{error}</div>}
       </form>
-      <h3>Accounts</h3>
-      <table style={{width: '100%', borderCollapse: 'collapse', marginTop: 12}}>
+      <h3 style={{color: "var(--text-main)"}}>Accounts</h3>
+      <table style={{width: '100%', borderCollapse: 'collapse', marginTop: 12, background: 'var(--bg-card)', color: 'var(--text-main)'}}>
         <thead>
-          <tr style={{background: '#c0bfbfff'}}>
-            <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Account</th>
-            <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Type</th>
-            <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Balance</th>
-            <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Edit</th>
+          <tr style={{background: 'var(--table-header)'}}>
+            <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Account</th>
+            <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Type</th>
+            <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Balance</th>
+            <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Edit</th>
           </tr>
         </thead>
         <tbody>
@@ -234,26 +233,26 @@ export default function Retirement() {
           ) : (
             accounts.map(acc => (
               <React.Fragment key={acc.id}>
-                <tr style={{background: '#ffffffff'}}>
-                  <td style={{padding: 8, border: '1px solid #eee'}}>{acc.name}</td>
-                  <td style={{padding: 8, border: '1px solid #eee'}}>{acc.type}</td>
-                  <td style={{padding: 8, border: '1px solid #eee'}}>
+                <tr style={{background: 'var(--table-row)'}}>
+                  <td style={{padding: 8, border: '1px solid var(--table-border)'}}>{acc.name}</td>
+                  <td style={{padding: 8, border: '1px solid var(--table-border)'}}>{acc.type}</td>
+                  <td style={{padding: 8, border: '1px solid var(--table-border)'}}>
                     {`$${acc.balance?.toLocaleString(undefined, {maximumFractionDigits: 2})}`}
                   </td>
-                  <td style={{padding: 8, border: '1px solid #eee', cursor: 'pointer', textAlign: 'center'}} onClick={() => setExpanded(expanded === acc.id ? null : acc.id)}>
+                  <td style={{padding: 8, border: '1px solid var(--table-border)', cursor: 'pointer', textAlign: 'center'}} onClick={() => setExpanded(expanded === acc.id ? null : acc.id)}>
                     <span style={{fontSize: 22, letterSpacing: 2, userSelect: 'none'}}>⋮</span>
                   </td>
                 </tr>
                 {expanded === acc.id && (
                   <tr>
-                    <td colSpan={4} style={{background: '#f8fafd', border: '1px solid #eee', padding: 16}}>
+                    <td colSpan={4} style={{background: 'var(--bg-main)', border: '1px solid var(--table-border)', padding: 16}}>
                       <div style={{display: 'flex', gap: 32}}>
                         {/* 401k Balance Edit */}
                         {acc.type.includes('401k') && (
                           <div style={{flex: 1}}>
                             <strong>Edit 401k Balance</strong>
                             <form style={{display: 'flex', alignItems: 'center', gap: 8, marginTop: 8}} onSubmit={e => handleK401Save(acc.id, e)}>
-                              <input type="number" value={k401Edit[acc.id] ?? acc.balance} onChange={e => handleK401Edit(acc.id, e.target.value)} style={{width: 120, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid #ccc'}} />
+                              <input type="number" value={k401Edit[acc.id] ?? acc.balance} onChange={e => handleK401Edit(acc.id, e.target.value)} style={{width: 120, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid var(--border-main)', background: 'var(--bg-main)', color: 'var(--text-main)'}} />
                               <button style={{padding: '6px 14px', fontSize: 14, borderRadius: 5, background: '#1976d2', color: '#fff', border: 'none'}}>Save</button>
                             </form>
                           </div>
@@ -263,19 +262,19 @@ export default function Retirement() {
                           <div style={{flex: 2}}>
                             <strong>Add Equity to IRA</strong>
                             <form style={{display: 'flex', gap: 8, marginTop: 8}} onSubmit={e => handleAddIraEquity(acc.id, e)}>
-                              <input type="text" placeholder="Ticker" value={iraForms[acc.id]?.ticker || ""} onChange={e => handleIraFormChange(acc.id, "ticker", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid #ccc'}} />
-                              <input type="number" placeholder="Shares" value={iraForms[acc.id]?.shares || ""} onChange={e => handleIraFormChange(acc.id, "shares", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid #ccc'}} />
+                              <input type="text" placeholder="Ticker" value={iraForms[acc.id]?.ticker || ""} onChange={e => handleIraFormChange(acc.id, "ticker", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid var(--border-main)', background: 'var(--bg-main)', color: 'var(--text-main)'}} />
+                              <input type="number" placeholder="Shares" value={iraForms[acc.id]?.shares || ""} onChange={e => handleIraFormChange(acc.id, "shares", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid var(--border-main)', background: 'var(--bg-main)', color: 'var(--text-main)'}} />
                               <button style={{padding: '6px 14px', fontSize: 14, borderRadius: 5, background: '#1976d2', color: '#fff', border: 'none'}}>Add</button>
                             </form>
                             {/* IRA Holdings Table */}
-                            <table style={{width: '100%', marginTop: 12, borderCollapse: 'collapse'}}>
+                            <table style={{width: '100%', marginTop: 12, borderCollapse: 'collapse', background: 'var(--bg-card)', color: 'var(--text-main)'}}>
                               <thead>
-                                <tr style={{background: '#f5f5f5'}}>
-                                  <th style={{padding: 6, border: '1px solid #eee'}}>Ticker</th>
-                                  <th style={{padding: 6, border: '1px solid #eee'}}>Shares</th>
-                                  <th style={{padding: 6, border: '1px solid #eee'}}>Price</th>
-                                  <th style={{padding: 6, border: '1px solid #eee'}}>Value</th>
-                                  <th style={{padding: 6, border: '1px solid #eee'}}>Options</th>
+                                <tr style={{background: 'var(--table-header)'}}>
+                                  <th style={{padding: 6, border: '1px solid var(--table-border)'}}>Ticker</th>
+                                  <th style={{padding: 6, border: '1px solid var(--table-border)'}}>Shares</th>
+                                  <th style={{padding: 6, border: '1px solid var(--table-border)'}}>Price</th>
+                                  <th style={{padding: 6, border: '1px solid var(--table-border)'}}>Value</th>
+                                  <th style={{padding: 6, border: '1px solid var(--table-border)'}}>Options</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -285,12 +284,12 @@ export default function Retirement() {
                                   iraHoldings[acc.id].map(h => {
                                     const priceObj = iraPrices[acc.id]?.[h.symbol] || {};
                                     return (
-                                      <tr key={h.id}>
-                                        <td style={{padding: 6, border: '1px solid #eee'}}>{h.symbol}</td>
-                                        <td style={{padding: 6, border: '1px solid #eee'}}>{h.shares}</td>
-                                        <td style={{padding: 6, border: '1px solid #eee'}}>{priceObj.price != null ? `$${priceObj.price.toLocaleString(undefined, {maximumFractionDigits: 2})}` : '-'}</td>
-                                        <td style={{padding: 6, border: '1px solid #eee'}}>{priceObj.value != null ? `$${priceObj.value.toLocaleString(undefined, {maximumFractionDigits: 2})}` : '-'}</td>
-                                        <td style={{padding: 6, border: '1px solid #eee'}}>
+                                      <tr key={h.id} style={{background: 'var(--table-row)'}}>
+                                        <td style={{padding: 6, border: '1px solid var(--table-border)'}}>{h.symbol}</td>
+                                        <td style={{padding: 6, border: '1px solid var(--table-border)'}}>{h.shares}</td>
+                                        <td style={{padding: 6, border: '1px solid var(--table-border)'}}>{priceObj.price != null ? `$${priceObj.price.toLocaleString(undefined, {maximumFractionDigits: 2})}` : '-'}</td>
+                                        <td style={{padding: 6, border: '1px solid var(--table-border)'}}>{priceObj.value != null ? `$${priceObj.value.toLocaleString(undefined, {maximumFractionDigits: 2})}` : '-'}</td>
+                                        <td style={{padding: 6, border: '1px solid var(--table-border)'}}>
                                           <button onClick={() => handleDeleteIraHolding(acc.id, h.id)} style={{padding: '4px 10px', fontSize: 13, borderRadius: 4, background: '#e53935', color: '#fff', border: 'none'}}>Delete</button>
                                         </td>
                                       </tr>
@@ -306,7 +305,7 @@ export default function Retirement() {
                           <div style={{flex: 1}}>
                             <strong>Add Cash to IRA</strong>
                             <form style={{display: 'flex', gap: 8, marginTop: 8}} onSubmit={e => handleAddIraCash(acc.id, e)}>
-                              <input type="number" placeholder="Amount" value={iraForms[acc.id]?.cash || ""} onChange={e => handleIraFormChange(acc.id, "cash", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid #ccc'}} />
+                              <input type="number" placeholder="Amount" value={iraForms[acc.id]?.cash || ""} onChange={e => handleIraFormChange(acc.id, "cash", e.target.value)} style={{width: 100, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid var(--border-main)', background: 'var(--bg-main)', color: 'var(--text-main)'}} />
                               <button style={{padding: '6px 14px', fontSize: 14, borderRadius: 5, background: '#388e3c', color: '#fff', border: 'none'}}>Add</button>
                             </form>
                             <div style={{marginTop: 8, color: '#1976d2', fontWeight: 500}}>

@@ -1,4 +1,3 @@
-
 import React from "react";
 
 
@@ -100,7 +99,6 @@ function PortfolioEquityMenu() {
     }
   };
 
-  // ...existing code...
   const handleEditChange = (ticker, value) => {
     setEditState(edit => ({ ...edit, [ticker]: value }));
   };
@@ -132,8 +130,8 @@ function PortfolioEquityMenu() {
   };
 
   return (
-  <div style={{maxWidth: 1000, margin: "40px auto", padding: '32px 40px', background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px #0001"}}>
-      <h2>Add Equity</h2>
+  <div style={{maxWidth: 1000, margin: "40px auto", padding: '32px 40px', background: "var(--bg-card)", borderRadius: 12, boxShadow: "0 2px 12px #0006", color: "var(--text-main)"}}>
+      <h2 style={{color: "var(--text-main)"}}>Add Equity</h2>
       <form onSubmit={handleSubmit}>
         <div style={{marginBottom: 16, position: 'relative'}}>
           <label style={{display: "block", marginBottom: 8}}>Ticker Symbol</label>
@@ -145,18 +143,17 @@ function PortfolioEquityMenu() {
             onBlur={handleBlur}
             placeholder="e.g. AAPL, TSLA"
             autoComplete="off"
-            style={{width: "100%", padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid #ccc"}}
+            style={{width: "100%", padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid var(--border-main)", background: "var(--bg-main)", color: "var(--text-main)"}}
           />
           {showSuggestions && tickerSuggestions.length > 0 && (
-            <ul style={{position: 'absolute', left: 0, right: 0, top: 54, zIndex: 10, background: '#fff', border: '1px solid #ccc', borderRadius: 6, maxHeight: 220, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none', boxShadow: '0 2px 8px #0002'}}>
+            <ul style={{position: 'absolute', left: 0, right: 0, top: 54, zIndex: 10, background: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 6, maxHeight: 220, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none', boxShadow: '0 2px 8px #0004'}}>
               {tickerSuggestions.map(sug => (
                 <li
                   key={sug.symbol}
                   onMouseDown={() => handleSuggestionClick(sug.symbol)}
-                  style={{padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid #eee'}}
-                >
+                  style={{padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border-main)', color: 'var(--text-main)'}}>
                   <span style={{fontWeight: 600}}>{sug.symbol}</span>
-                  <span style={{color: '#888', marginLeft: 10}}>{sug.name}</span>
+                  <span style={{color: '#aaa', marginLeft: 10}}>{sug.name}</span>
                 </li>
               ))}
             </ul>
@@ -169,18 +166,18 @@ function PortfolioEquityMenu() {
             value={shares}
             onChange={e => setShares(e.target.value)}
             placeholder="Enter shares"
-            style={{width: "100%", padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid #ccc"}}
+            style={{width: "100%", padding: 8, fontSize: 16, borderRadius: 6, border: "1px solid var(--border-main)", background: "var(--bg-main)", color: "var(--text-main)"}}
           />
         </div>
         <button type="submit" style={{width: "100%", padding: 10, fontSize: 16, borderRadius: 6, background: "#1976d2", color: "#fff", border: "none"}}>
           Add Equity
         </button>
-        {success && <div style={{color: 'green', marginTop: 16}}>{success}</div>}
-        {error && <div style={{color: 'red', marginTop: 16}}>{error}</div>}
+        {success && <div style={{color: 'lightgreen', marginTop: 16}}>{success}</div>}
+        {error && <div style={{color: '#ff6b6b', marginTop: 16}}>{error}</div>}
       </form>
       <div style={{marginTop: 32}}>
-        <h3>Portfolio Holdings</h3>
-        <div style={{fontSize: 20, fontWeight: 600, marginBottom: 24, color: '#1976d2'}}>
+        <h3 style={{color: "var(--text-main)"}}>Portfolio Holdings</h3>
+        <div style={{fontSize: 20, fontWeight: 600, marginBottom: 24, color: '#90caf9'}}>
             {
                 (() => {
                     let totalValue = 0;
@@ -200,14 +197,14 @@ function PortfolioEquityMenu() {
         ) : equities.length === 0 ? (
           <div style={{color: '#888'}}>No equities in portfolio yet.</div>
         ) : (
-          <table style={{width: '100%', borderCollapse: 'collapse', marginTop: 12}}>
+          <table style={{width: '100%', borderCollapse: 'collapse', marginTop: 12, background: 'var(--bg-card)', color: 'var(--text-main)'}}>
             <thead>
-              <tr style={{background: '#f5f5f5'}}>
-                <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Ticker</th>
-                <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Share Amount</th>
-                <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Share Price</th>
-                <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Total Standing Value</th>
-                <th style={{padding: 8, border: '1px solid #eee', textAlign: 'left'}}>Options</th>
+              <tr style={{background: 'var(--table-header)'}}>
+                <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Ticker</th>
+                <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Share Amount</th>
+                <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Share Price</th>
+                <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Total Standing Value</th>
+                <th style={{padding: 8, border: '1px solid var(--table-border)', textAlign: 'left'}}>Options</th>
               </tr>
             </thead>
             <tbody>
@@ -216,24 +213,24 @@ function PortfolioEquityMenu() {
                 const priceVal = prices[eq.ticker];
                 const total = priceVal && !isNaN(sharesVal) ? sharesVal * priceVal : null;
                 return (
-                  <tr key={eq.ticker} style={{background: '#fafbfc'}}>
-                    <td style={{padding: 8, border: '1px solid #eee'}}><strong>{eq.ticker}</strong></td>
-                    <td style={{padding: 8, border: '1px solid #eee'}}>
+                  <tr key={eq.ticker} style={{background: 'var(--table-row)'}}>
+                    <td style={{padding: 8, border: '1px solid var(--table-border)'}}><strong>{eq.ticker}</strong></td>
+                    <td style={{padding: 8, border: '1px solid var(--table-border)'}}>
                       <input
                         type="number"
                         value={editState[eq.ticker] !== undefined ? editState[eq.ticker] : eq.shares}
                         onChange={e => handleEditChange(eq.ticker, e.target.value)}
-                        style={{width: 80, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid #ccc'}}
+                        style={{width: 80, padding: 6, fontSize: 15, borderRadius: 5, border: '1px solid var(--border-main)', background: 'var(--bg-main)', color: 'var(--text-main)'}}
                         min="0"
                       />
                     </td>
-                    <td style={{padding: 8, border: '1px solid #eee', color: '#1976d2', fontWeight: 500}}>
+                    <td style={{padding: 8, border: '1px solid var(--table-border)', color: '#90caf9', fontWeight: 500}}>
                       {priceVal === undefined ? '...' : priceVal === null ? 'N/A' : `$${priceVal.toLocaleString(undefined, {maximumFractionDigits: 2})}`}
                     </td>
-                    <td style={{padding: 8, border: '1px solid #eee', color: '#388e3c', fontWeight: 600}}>
+                    <td style={{padding: 8, border: '1px solid var(--table-border)', color: '#a5d6a7', fontWeight: 600}}>
                       {total === null ? '' : `$${total.toLocaleString(undefined, {maximumFractionDigits: 2})}`}
                     </td>
-                    <td style={{padding: 8, border: '1px solid #eee'}}>
+                    <td style={{padding: 8, border: '1px solid var(--table-border)'}}>
                       <button type="button" onClick={() => handleSave(eq.ticker)} style={{padding: '6px 14px', fontSize: 14, borderRadius: 5, background: '#1976d2', color: '#fff', border: 'none', marginRight: 8}}>Save</button>
                       <button type="button" onClick={() => handleDelete(eq.ticker)} style={{padding: '6px 14px', fontSize: 14, borderRadius: 5, background: '#e53935', color: '#fff', border: 'none'}}>Delete</button>
                     </td>

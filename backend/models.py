@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -6,6 +5,13 @@ from typing import List, Optional
 class Equity(BaseModel):
     ticker: str
     shares: float
+
+class EquityWithPrices(Equity):
+    current: float
+    yesterday_close: float
+
+class EquityWithHistory(Equity):
+    prices: list[float]
 
 
 

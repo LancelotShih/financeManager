@@ -80,40 +80,40 @@ export default function Treasuries() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto", padding: '32px 40px', background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px #0001" }}>
-      <h2>Treasuries</h2>
-      <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 18, color: '#1976d2' }}>
+    <div style={{ maxWidth: 600, margin: "40px auto", padding: '32px 40px', background: "var(--bg-card)", borderRadius: 12, boxShadow: "0 2px 12px #0006", color: "var(--text-main)" }}>
+      <h2 style={{color: "var(--text-main)"}}>Treasuries</h2>
+      <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 18, color: '#90caf9' }}>
         Total Value: ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
       </div>
       {/* Add-cash form removed as requested */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12, background: 'var(--bg-card)', color: 'var(--text-main)' }}>
         <thead>
-          <tr style={{ background: '#f5f5f5' }}>
-            <th style={{ padding: 8, border: '1px solid #eee', textAlign: 'left' }}>Type</th>
-            <th style={{ padding: 8, border: '1px solid #eee', textAlign: 'left' }}>Total Cash ($)</th>
-            <th style={{ padding: 8, border: '1px solid #eee', textAlign: 'left' }}>Actions</th>
+          <tr style={{ background: 'var(--table-header)' }}>
+            <th style={{ padding: 8, border: '1px solid var(--table-border)', textAlign: 'left' }}>Type</th>
+            <th style={{ padding: 8, border: '1px solid var(--table-border)', textAlign: 'left' }}>Total Cash ($)</th>
+            <th style={{ padding: 8, border: '1px solid var(--table-border)', textAlign: 'left' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {TREASURY_TYPES.map(t => {
             const row = summary.find(s => s.type === t) || { principal: 0 };
             return (
-              <tr key={t}>
-                <td style={{ fontWeight: 600 }}>{t}</td>
-                <td>
+              <tr key={t} style={{background: 'var(--table-row)'}}>
+                <td style={{ fontWeight: 600, padding: 8, border: '1px solid var(--table-border)' }}>{t}</td>
+                <td style={{ padding: 8, border: '1px solid var(--table-border)' }}>
                   {editType === t ? (
                     <input
                       type="number"
                       value={editValue}
                       min="0"
                       onChange={e => setEditValue(e.target.value)}
-                      style={{ width: 100, fontSize: 14, borderRadius: 4, border: '1px solid #ccc', padding: 2 }}
+                      style={{ width: 100, fontSize: 14, borderRadius: 4, border: '1px solid var(--border-main)', padding: 2, background: 'var(--bg-main)', color: 'var(--text-main)' }}
                     />
                   ) : (
                     `$${row.principal.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
                   )}
                 </td>
-                <td>
+                <td style={{ padding: 8, border: '1px solid var(--table-border)' }}>
                   {editType === t ? (
                     <>
                       <button onClick={() => handleEditSave(t)} style={{ color: '#fff', background: '#1976d2', border: 'none', borderRadius: 4, padding: '2px 10px', fontSize: 13, marginRight: 4 }}>Save</button>
@@ -133,8 +133,8 @@ export default function Treasuries() {
           })}
         </tbody>
       </table>
-      {success && <div style={{ color: 'green', marginTop: 16 }}>{success}</div>}
-      {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
+      {success && <div style={{ color: 'lightgreen', marginTop: 16 }}>{success}</div>}
+      {error && <div style={{ color: '#ff6b6b', marginTop: 16 }}>{error}</div>}
     </div>
   );
 }

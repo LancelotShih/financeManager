@@ -205,3 +205,15 @@ export async function getRetirementAccounts() {
   const res = await fetch(`${API_BASE}/retirement`);
   return res.json();
 }
+
+export async function getEquitiesWithPrices() {
+  const res = await fetch(`${API_BASE}/equities/prices`);
+  if (!res.ok) throw new Error("Failed to fetch equities with prices");
+  return res.json();
+}
+
+export async function getEquitiesWithHistory() {
+  const res = await fetch(`${API_BASE}/equities/history`);
+  if (!res.ok) throw new Error("Failed to fetch equities with history");
+  return res.json();
+}

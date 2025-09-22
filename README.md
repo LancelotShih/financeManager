@@ -1,4 +1,4 @@
-# FinanceAppV2
+# FinanceApp
 
 A modern full-stack personal finance dashboard app.
 
@@ -17,3 +17,7 @@ A modern full-stack personal finance dashboard app.
 
 ## Getting Started
 Instructions for running backend and frontend will be added after scaffolding.
+
+## To run without containers
+On the backend, run `uvicorn main:app --reload`
+On the frontend, run `npm start`

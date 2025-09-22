@@ -252,6 +252,63 @@ def delete_equity(ticker: str):
     conn.commit()
     return {"ok": True}
 
+class EquityWithPrices(Equity):
+    current: float
+    yesterday_close: float
+
+@router.get("/equities/prices", response_model=List[EquityWithPrices])
+def get_equities_with_prices():
+    conn = get_db()
+    rows = conn.execute("SELECT ticker, shares FROM equities").fetchall()
+    results = []
+    for row in rows:
+        ticker = row["ticker"]
+        shares = row["shares"]
+        try:
+            yf_ticker = yf.Ticker(ticker)
+            hist = yf_ticker.history(period="2d")
+            if not hist.empty:
+                if len(hist) > 1:
+                    yesterday_close = hist['Close'][-2]
+                    current = hist['Close'][-1]
+                else:
+                    yesterday_close = current = hist['Close'][-1]
+            else:
+                yesterday_close = current = 0.0
+        except Exception:
+            yesterday_close = current = 0.0
+        results.append({
+            "ticker": ticker,
+            "shares": shares,
+            "current": float(current),
+            "yesterday_close": float(yesterday_close)
+        })
+    return results
+
+class EquityWithHistory(Equity):
+    prices: list[float]
+
+@router.get("/equities/history", response_model=List[EquityWithHistory])
+def get_equities_with_history():
+    conn = get_db()
+    rows = conn.execute("SELECT ticker, shares FROM equities").fetchall()
+    results = []
+    for row in rows:
+        ticker = row["ticker"]
+        shares = row["shares"]
+        try:
+            yf_ticker = yf.Ticker(ticker)
+            hist = yf_ticker.history(period="6d")
+            closes = hist['Close'].tolist()[-5:] if not hist.empty else []
+        except Exception:
+            closes = []
+        results.append({
+            "ticker": ticker,
+            "shares": shares,
+            "prices": [float(p) for p in closes]
+        })
+    return results
+
 # --- Cash Accounts ---
 @router.get("/cash", response_model=List[CashAccount])
 def get_cash_accounts():

@@ -6,11 +6,12 @@ export default function NavBar({ page, setPage }) {
       display: "flex",
       gap: 24,
       padding: "1rem 2rem",
-      background: "#222",
-      color: "#fff",
+      background: "var(--bg-card)",
+      color: "var(--text-main)",
       alignItems: "center",
       marginBottom: 32,
-      borderRadius: 12
+      borderRadius: 12,
+      boxShadow: "0 2px 12px 0 rgba(0,0,0,0.30)"
     }}>
       {[
         ["Dashboard", "dashboard"],
@@ -23,14 +24,15 @@ export default function NavBar({ page, setPage }) {
           key={key}
           onClick={() => setPage(key)}
           style={{
-            background: page === key ? "#fff" : "#222",
-            color: page === key ? "#222" : "#fff",
+            background: page === key ? "#1976d2" : "transparent",
+            color: page === key ? "#fff" : "var(--text-main)",
             border: "none",
             borderRadius: 8,
             padding: "0.5rem 1.2rem",
             fontWeight: 600,
             cursor: "pointer",
-            fontSize: 16
+            fontSize: 16,
+            transition: "background 0.2s, color 0.2s"
           }}
         >
           {label}
