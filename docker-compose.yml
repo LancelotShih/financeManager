@@ -1,14 +1,22 @@
-version: '3.8'
+version: "3.9"
+
 services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend/.env:/app/.env
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5173:80"
     depends_on:
       - backend
+    restart: unless-stopped

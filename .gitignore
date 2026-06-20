@@ -1,20 +1,12 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.env
 
-# SQLite database
-*.db
+# Cookies — never commit
+backend/cookies.json
 
-# Node modules
+# Node
 frontend/node_modules/
-
-# Environment
-.env
-
-# profile files
-backend/finance.db
+frontend/dist/
