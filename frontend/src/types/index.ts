@@ -23,6 +23,7 @@ export interface Portfolio {
   day_change_pct: number;
   unrealized_gain: number | null;
   unrealized_gain_pct: number | null;
+  cash?: number;
 }
 
 export interface PortfolioSummary {

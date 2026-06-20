@@ -19,8 +19,19 @@ export default function PortfolioDetail() {
   const [period, setPeriod] = useState("6m");
   const { data, isLoading, error, refetch } = usePortfolio(id!);
 
-  const symbols = data?.holdings.map((h) => h.symbol) ?? [];
-  const { data: histData, isLoading: histLoading } = usePortfolioHistory(symbols, period);
+  const { holdingsMap, baseValue } = (() => {
+    const map: Record<string, number> = {};
+    let constant = data?.cash ?? 0;
+    (data?.holdings ?? []).forEach((h) => {
+      if (h.price > 0 && h.shares > 0) {
+        map[h.symbol] = (map[h.symbol] ?? 0) + h.shares;
+      } else {
+        constant += h.value;
+      }
+    });
+    return { holdingsMap: map, baseValue: constant };
+  })();
+  const { data: histData, isLoading: histLoading } = usePortfolioHistory(holdingsMap, baseValue, period);
 
   if (isLoading) {
     return (
